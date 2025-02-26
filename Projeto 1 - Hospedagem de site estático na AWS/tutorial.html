@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial: Hospedando um Site Estático na AWS (S3 & CloudFront)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .code-container {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow-x: auto; /* Adiciona barra de rolagem horizontal se o código for muito longo */
+        }
+
+        .code-container pre {
+            margin: 0;
+            padding: 0;
+            white-space: pre-wrap; /* Quebra de linha automática dentro do <pre> */
+        }
+
+        strong {
+            font-weight: bold;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tutorial: Hospedando um Site Estático na AWS (S3 & CloudFront)</h1>
+
+    <p>Este tutorial passo a passo irá guiá-lo na criação e hospedagem de um site estático simples utilizando o Amazon S3 (Simple Storage Service) e CloudFront (Content Delivery Network) da AWS, aproveitando o nível gratuito.</p>
+
+    <h2>Pré-requisitos:</h2>
+    <ul>
+        <li><strong>Conta AWS:</strong> Você precisa de uma conta na Amazon Web Services (AWS). Se você não tem uma, pode criar uma gratuitamente. O nível gratuito da AWS oferece 5 GB de armazenamento S3 e transferência de dados limitada.</li>
+        <li><strong>Conhecimento básico de HTML, CSS e JavaScript (opcional):</strong> Embora não seja essencial para este tutorial, um entendimento básico de HTML e CSS ajudará você a criar e personalizar seu site.</li>
+        <li><strong>Navegador Web:</strong> Um navegador web moderno para acessar e testar seu site.</li>
+    </ul>
+
+    <h2>Passo 1: Criando uma Conta AWS</h2>
+    <ol>
+        <li><strong>Acesse:</strong> Vá para o site da AWS: <a href="https://aws.amazon.com/">https://aws.amazon.com/</a></li>
+        <li><strong>Crie uma conta:</strong> Clique em "Criar uma Conta AWS" (ou "Sign In to the Console" se você já tiver uma conta).</li>
+        <li><strong>Siga as instruções:</strong> Preencha as informações solicitadas, incluindo seus dados de cartão de crédito. <strong>Observação:</strong> A AWS exige informações de cartão de crédito para fins de verificação, mas você não será cobrado a menos que exceda os limites do nível gratuito ou utilize serviços pagos.</li>
+        <li><strong>Verifique seu e-mail:</strong> Siga as instruções para verificar seu endereço de e-mail.</li>
+        <li><strong>Escolha um plano de suporte:</strong> Selecione o plano de suporte "Basic (Free)".</li>
+        <li><strong>Faça login:</strong> Após a criação da conta, faça login no Console AWS.</li>
+    </ol>
+
+    <h2>Passo 2: Criando um Bucket S3</h2>
+    <p>O Amazon S3 é um serviço de armazenamento de objetos altamente escalável e durável. Você usará um "bucket" S3 para armazenar os arquivos do seu site estático.</p>
+    <ol>
+        <li><strong>Acesse o Console S3:</strong> No Console AWS, digite "S3" na barra de pesquisa e selecione "S3".</li>
+        <li><strong>Crie um bucket:</strong> Clique no botão "Criar bucket".</li>
+        <li><strong>Nome do bucket:</strong> Escolha um nome único e descritivo para seu bucket. <strong>Importante:</strong> Os nomes de bucket S3 devem ser globalmente únicos em todos os usuários da AWS. Use algo como <code>meu-site-estatico-12345</code> (substitua 12345 por uma combinação aleatória de números).</li>
+        <li><strong>Região:</strong> Selecione a região da AWS que seja mais próxima de seus usuários. Isso pode ajudar a reduzir a latência.</li>
+        <li><strong>Bloquear todo o acesso público:</strong> <strong>Desmarque</strong> a caixa "Bloquear todo o acesso público". Isso é essencial para permitir que os usuários da web acessem seu site.</li>
+        <li><strong>Reconhecimento:</strong> Marque a caixa "Eu entendo que o bucket ficará público".</li>
+        <li><strong>Outras opções:</strong> Deixe as outras opções com seus valores padrão.</li>
+        <li><strong>Criar bucket:</strong> Clique no botão "Criar bucket".</li>
+    </ol>
+
+    <h2>Passo 3: Configurando o Bucket S3 para Hospedagem de Site Estático</h2>
+    <ol>
+        <li><strong>Selecione seu bucket:</strong> Clique no nome do bucket que você acabou de criar.</li>
+        <li><strong>Aba "Propriedades":</strong> Clique na aba "Propriedades".</li>
+        <li><strong>Hospedagem de site estático:</strong> Role para baixo até encontrar a seção "Hospedagem de site estático" e clique em "Editar".</li>
+        <li><strong>Ativar hospedagem estática:</strong> Selecione "Ativar".</li>
+        <li><strong>Documento de índice:</strong> Digite <code>index.html</code> no campo "Documento de índice". Este é o arquivo HTML que será exibido quando os usuários acessarem a raiz do seu site.</li>
+        <li><strong>Documento de erro (opcional):</strong> Digite <code>error.html</code> no campo "Documento de erro (opcional)". Este é o arquivo HTML que será exibido se um erro ocorrer (por exemplo, se um usuário tentar acessar uma página que não existe).</li>
+        <li><strong>Salvar alterações:</strong> Clique em "Salvar alterações".</li>
+    </ol>
+
+    <h2>Passo 4: Configurando a Política de Bucket (Permissões)</h2>
+    <p>Para permitir que os usuários da web acessem os arquivos do seu site, você precisa configurar uma política de bucket que conceda acesso público de leitura.</p>
+    <ol>
+        <li><strong>Aba "Permissões":</strong> Clique na aba "Permissões".</li>
+        <li><strong>Política de bucket:</strong> Na seção "Política de bucket", clique em "Editar".</li>
+        <li><strong>Cole a política JSON:</strong> Cole o seguinte código JSON no editor de política. <strong>Importante:</strong> Substitua <code>meu-site-estatico-12345</code> pelo nome real do seu bucket.</li>
+    </ol>
+
+    <div class="code-container">
+        <pre>
+            <code>
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::meu-site-estatico-12345/*"
+    }
+  ]
+}
+            </code>
+        </pre>
+    </div>
+
+    <ol start="4">
+        <li><strong>Salvar alterações:</strong> Clique em "Salvar alterações". A AWS pode mostrar um aviso de que o bucket tem acesso público. Isso é esperado.</li>
+    </ol>
+
+    <h2>Passo 5: Criando os Arquivos HTML, CSS e JavaScript (Opcional)</h2>
+    <p>Agora, crie os arquivos HTML, CSS e JavaScript que comporão seu site. Estes são exemplos básicos, você pode personalizá-los à vontade.</p>
+
+    <h3>index.html: (Página inicial)</h3>
+    <div class="code-container">
+       <xmp>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Site na Nuvem</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao meu site na nuvem!</h1>
+        <p>Este site está hospedado gratuitamente usando AWS S3 e distribuído com CloudFront.</p>
+        <img src="aws-logo.png" alt="AWS Logo" width="200">
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+            </xmp>
+    </div>
+
+    <h3>styles.css: (Estilos CSS)</h3>
+    <div class="code-container">
+        <pre>
+            <code>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 80%;
+    max-width: 600px; /* Adicionado para limitar a largura */
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+h1 {
+    color: #0066cc;
+}
+
+img {
+    margin-top: 20px;
+}
+            </code>
+        </pre>
+    </div>
+
+    <h3>error.html: (Página de erro 404)</h3>
+    <div class="code-container">
+        <xmp>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro - Página não encontrada</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Oops! Página não encontrada</h1>
+        <p>A página que você está procurando não existe.</p>
+        <a href="index.html">Voltar para a página inicial</a>
+    </div>
+</body>
+</html>
+            </xmp>
+    </div>
+
+    <h3>script.js (Opcional):</h3>
+    <div class="code-container">
+        <pre>
+            <code>
+// Exemplo simples de JavaScript
+console.log("Site carregado!");
+            </code>
+        </pre>
+    </div>
+
+    <p><strong>Importante:</strong> Se você estiver usando imagens, coloque-as na mesma pasta dos seus arquivos HTML e CSS e adicione a tag <code><img></code> no seu <code>index.html</code>, conforme mostrado no exemplo. Baixe uma imagem da AWS (ex: o logo) e salve como <code>aws-logo.png</code> na mesma pasta dos seus arquivos.</p>
+
+    <h2>Passo 6: Upload dos Arquivos para o S3</h2>
+    <ol>
+        <li><strong>Selecione seu bucket:</strong> Volte para a página do seu bucket no Console S3.</li>
+        <li><strong>Aba "Objetos":</strong> Clique na aba "Objetos".</li>
+        <li><strong>Carregar arquivos:</strong> Clique no botão "Carregar arquivos" e selecione todos os arquivos do seu site (index.html, styles.css, error.html, script.js e as imagens se tiver alguma). Você também pode arrastar e soltar os arquivos na área de upload.</li>
+        <li><strong>Carregar:</strong> Clique no botão "Carregar".</li>
+    </ol>
+
+    <h2>Passo 7: Acessando seu Site (Diretamente via S3)</h2>
+    <ol>
+        <li><strong>Aba "Propriedades":</strong> Volte para a aba "Propriedades" do seu bucket.</li>
+        <li><strong>Hospedagem de site estático:</strong> Role para baixo até a seção "Hospedagem de site estático".</li>
+        <li><strong>URL do site:</strong> Você verá o "Endpoint do site". Este é o URL público do seu site. Ele se parecerá com algo como <code>http://meu-site-estatico-12345.s3-website.us-east-1.amazonaws.com</code>.</li>
+        <li><strong>Acesse o site:</strong> Clique no URL ou copie-o e cole-o na barra de endereço do seu navegador. Seu site deve ser exibido!</li>
+    </ol>
+
+    <div class="code-container">
+        <pre>
+            <code>
+<p>
+Para acessar o seu site, copie o URL fornecido em "Hospedagem de site estático" e cole-o no seu navegador. O URL deve ter um formato semelhante a este:
+<code>http://meu-site-estatico-12345.s3-website.us-east-1.amazonaws.com</code>
+</p>
+            </code>
+        </pre>
+    </div>
+
+    <h2>Passo 8: Configurando o CloudFront (Opcional, mas Recomendado)</h2>
+    <p>O Amazon CloudFront é uma rede de distribuição de conteúdo (CDN) que pode acelerar a entrega do seu site para usuários em todo o mundo. Ele também fornece um certificado SSL/TLS gratuito para HTTPS.</p>
+    <ol>
+        <li><strong>Acesse o Console CloudFront:</strong> No Console AWS, digite "CloudFront" na barra de pesquisa e selecione "CloudFront".</li>
+        <li><strong>Criar distribuição:</strong> Clique no botão "Criar distribuição".</li>
+        <li><strong>Origem:</strong>
+            <ul>
+                <li><strong>Domínio de origem:</strong> Clique no campo "Domínio de origem". Ele deverá listar o seu bucket S3. <strong>Importante:</strong> Selecione o <em>endpoint do site</em> do seu bucket (aquele que você usou para acessar o site diretamente no passo anterior), e <em>não</em> o endpoint da API S3. O endpoint do site geralmente tem o formato <code>meu-site-estatico-12345.s3-website.us-east-1.amazonaws.com</code>. Se você não vir seu bucket listado, verifique se o bucket foi configurado para hospedagem de site estático corretamente (Passo 3).</li>
+                <li><strong>Acesso ao bucket S3:</strong> Selecione "Sim, usar identidade de acesso de origem (recomendado)". Clique em "Criar uma nova identidade de acesso de origem". Conceda permissão para o CloudFront atualizar a política do bucket.</li>
+            </ul>
+        </li>
+        <li><strong>Configurações de cache e origem:</strong> Deixe a maioria das configurações com seus valores padrão.</li>
+        <li><strong>Configurações de Função:</strong>
+            <ul>
+                <li><strong>Visualizador:</strong> Selecione "Redirecionar HTTP para HTTPS". Isso garante que todo o tráfego para seu site seja criptografado.</li>
+                <li><strong>Métodos HTTP permitidos:</strong> Deixe o padrão "GET, HEAD".</li>
+            </ul>
+        </li>
+        <li><strong>Configurações de Distribuição:</strong>
+            <ul>
+                <li><strong>Preços de preço:</strong> Selecione o preço adequado para seu público. O padrão "Usar apenas o preço padrão dos EUA, Canadá e Europa" geralmente é suficiente para testes.</li>
+                <li><strong>Objeto raiz padrão:</strong> Digite <code>index.html</code>.</li>
+            </ul>
+        </li>
+        <li><strong>Criar distribuição:</strong> Clique no botão "Criar distribuição".</li>
+        <li><strong>Aguarde a implantação:</strong> Aguarde até que o status da distribuição mude para "Implantado". Isso pode levar alguns minutos.</li>
+        <li><strong>Acesse seu site via CloudFront:</strong> Use o "Nome de domínio" fornecido pelo CloudFront para acessar seu site. Ele se parecerá com algo como <code>d1234567890abc.cloudfront.net</code>. Copie e cole esse endereço no seu navegador.</li>
+    </ol>
+
+    <h2>Conclusão</h2>
+    <p>Parabéns! Agora você tem um site estático hospedado na nuvem AWS, usando serviços gratuitos. Este site pode ser acessado de qualquer lugar do mundo e, com o CloudFront, tem distribuição global de conteúdo.</p>
+
+</body>
+</html>
